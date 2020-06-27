@@ -6,6 +6,7 @@ class UserHeader extends React.Component {
   componentDidMount() {
     this.props.fetchUser(this.props.userId);
   }
+  // this is very inefficient way of getting the data as it gets each user 10 times. So 10 users 10 times = 100 requests! Very bad, so we will change that!
 
   render() {
     const { user } = this.props;
