@@ -1,6 +1,12 @@
 import _ from 'lodash';
 import jsonPlaceholder from "../apis/jsonPlaceholder";
 
+export const fetchPostsAndUsers = () => async (dispatch, getState) => {
+  await dispatch(fetchPosts());
+  const userIds = _.uniq(_.map(getState().posts, 'userId'));
+  userIds.forEach(id => dispatch(fetchUser(id)));
+};
+
 export const fetchPosts = () => async (dispatch) => {
   const response = await jsonPlaceholder.get("/posts");
 
@@ -10,19 +16,31 @@ export const fetchPosts = () => async (dispatch) => {
   });
 };
 
-export const fetchUser = (id) => (dispatch) => {
-  // const response = await jsonPlaceholder.get(`/users/${id}`);
-
-  // dispatch({ type: "FETCH_USER", payload: response.data });
-  // popping this call into lodash memoize so it is called only once per user and not each comment per each user (10 * 10 = 100 calls)
-  _fetchUser(id, dispatch);
-};
-
-const _fetchUser = _.memoize(async(id, dispatch) => {
+export const fetchUser = id => async dispatch => {
   const response = await jsonPlaceholder.get(`/users/${id}`);
 
-  dispatch({ type: "FETCH_USER", payload: response.data });
-});
+  dispatch({ type: 'FETCH_USER', payload: response.data });
+};
+
+// because we are using THUNK, we can build our action creator and dispatch a function to it, then await that reply before we send the next request.
+
+// ---------------------------------------------------------------------
+
+// BEFORE MEMOIZE REFACTOR
+// export const fetchUser = (id) => (dispatch) => {
+//   // const response = await jsonPlaceholder.get(`/users/${id}`);
+
+//   // dispatch({ type: "FETCH_USER", payload: response.data });
+//   // popping this call into lodash memoize so it is called only once per user and not each comment per each user (10 * 10 = 100 calls)
+//   _fetchUser(id, dispatch);
+// };
+
+// // now we have a function (id) that returns a function (dispatch) that calls _fetchUser with id and dispatch
+// const _fetchUser = _.memoize(async(id, dispatch) => {
+//   const response = await jsonPlaceholder.get(`/users/${id}`);
+
+//   dispatch({ type: "FETCH_USER", payload: response.data });
+// });
 
 // BEFORE REFACTOR
 // import jsonPlaceholder from "../apis/jsonPlaceholder";
